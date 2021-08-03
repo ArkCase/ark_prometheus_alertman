@@ -8,50 +8,48 @@ ARG SRC="${PKG}-${VER}.${OS}-${ARCH}"
 ARG UID="nobody"
 ARG GID="nobody"
 
-LABEL   ORG="Armedia LLC" \
-        APP="Prometheus Alert Manager" \
-        VERSION="${VER}" \
-        IMAGE_SOURCE="https://github.com/ArkCase/ark_prometheus_alertman" \
-        MAINTAINER="Armedia LLC"
+LABEL ORG="Armedia LLC"
+LABEL MAINTAINER="Armedia LLC"
+LABEL APP="Prometheus Alert Manager"
+LABEL VERSION="${VER}"
+LABEL IMAGE_SOURCE="https://github.com/ArkCase/ark_prometheus_alertman"
 
 # Modify to fetch from S3 ...
 RUN curl \
         -L "https://github.com/prometheus/${PKG}/releases/download/v${VER}/${SRC}.tar.gz" \
-        -o "package.tar.gz" && \
-    tar -xzvf "package.tar.gz" && \
-    mkdir -pv \
+        -o - | tar -xzvf -
+RUN mkdir -pv \
         "/app/data" \
-        "/app/conf" && \
-    ln -sv \
+        "/app/conf"
+RUN ln -sv \
         "/app/conf" \
-        "/etc/alertmanager" && \
-    ln -sv \
+        "/etc/alertmanager"
+RUN ln -sv \
         "/app/conf" \
-        "/etc/amtool" && \
-    mv -vif \
+        "/etc/amtool"
+RUN mv -vif \
         "${SRC}/LICENSE" \
-        "/LICENSE" && \
-    mv -vif \
+        "/LICENSE"
+RUN mv -vif \
         "${SRC}/NOTICE" \
-        "/NOTICE" && \
-    mv -vif \
+        "/NOTICE"
+RUN mv -vif \
         "${SRC}/amtool" \
-        "/bin/amtool" && \
-    mv -vif \
+        "/bin/amtool"
+RUN mv -vif \
         "${SRC}/alertmanager" \
-        "/bin/alertmanager" && \
-    mv -vif \
+        "/bin/alertmanager"
+RUN mv -vif \
         "${SRC}/alertmanager.yml" \
-        "/app/conf/alertmanager.yml" && \
-    chown -R "${UID}:${GID}" \
+        "/app/conf/alertmanager.yml"
+RUN chown -R "${UID}:${GID}" \
         "/app/data" \
-        "/app/conf" && \
-    chmod -R ug+rwX,o-rwx \
+        "/app/conf"
+RUN chmod -R ug+rwX,o-rwx \
         "/app/data" \
-        "/app/conf" && \
-    rm -rvf \
-        "${SRC}" \
-        "package.tar.gz"
+        "/app/conf"
+RUN rm -rvf \
+        "${SRC}"
 
 USER        ${UID}
 EXPOSE      9093
