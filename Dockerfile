@@ -1,32 +1,39 @@
 ARG ARCH="amd64"
 ARG OS="linux"
-FROM 345280441424.dkr.ecr.ap-south-1.amazonaws.com/ark_base:latest
-LABEL maintainer="Armedia, LLC"
-
-ARG ARCH="amd64"
-ARG OS="linux"
 ARG VER="0.22.2"
 ARG PKG="alertmanager"
 ARG SRC="${PKG}-${VER}.${OS}-${ARCH}"
 
+FROM 345280441424.dkr.ecr.ap-south-1.amazonaws.com/ark_base:latest
+
+LABEL	ORG="Armedia LLC" \
+		APP="Prometheus Alert Manager" \
+		VERSION="${VER}" \
+		IMAGE_SOURCE="https://github.com/ArkCase/ark_prometheus_alertman" \
+		MAINTAINER="Armedia LLC"
+
+# Modify to fetch from S3 ...
 RUN curl \
 		-L "https://github.com/prometheus/${PKG}/releases/download/v${VER}/${SRC}.tar.gz" \
-		-o package.tar.gz && \
+		-o "package.tar.gz" && \
 	tar -xzvf "package.tar.gz" && \
-	mkdir -pv "/etc/alertmanager" && \
-	mkdir -p "/alertmanager" && \
-	mv -vif "${SRC}/LICENSE"                     "/LICENSE" && \
-	mv -vif "${SRC}/NOTICE"                      "/NOTICE" && \
-	mv -vif "${SRC}/amtool"                      "/bin/amtool" && \
-	mv -vif "${SRC}/alertmanager"                "/bin/alertmanager" && \
-	mv -vif "${SRC}/alertmanager.yml"            "/etc/alertmanager/alertmanager.yml" && \
-    chown -R nobody:nobody "/etc/alertmanager" "/alertmanager" && \
-	rm -rvf "${SRC}" package.tar.gz
+	mkdir -pv "/app/data" && \
+	mkdir -pv "/app/conf" && \
+	ln -sv "/app/conf" "/etc/alertmanager" && \
+	ln -sv "/app/conf" "/etc/amtool" && \
+	mv -vif "${SRC}/LICENSE"					"/LICENSE" && \
+	mv -vif "${SRC}/NOTICE"						"/NOTICE" && \
+	mv -vif "${SRC}/amtool"						"/bin/amtool" && \
+	mv -vif "${SRC}/alertmanager"				"/bin/alertmanager" && \
+	mv -vif "${SRC}/alertmanager.yml"			"/app/conf/alertmanager.yml" && \
+    chown -R nobody:nobody	"/app/data" "/app/conf" && \
+    chmod -R ug+rwX,o-rwx	"/app/data" "/app/conf" && \
+	rm -rvf "${SRC}" "package.tar.gz"
 
-USER       nobody
-EXPOSE     9093
-VOLUME     [ "/alertmanager" ]
-WORKDIR    /alertmanager
-ENTRYPOINT [ "/bin/alertmanager" ]
-CMD        [ "--config.file=/etc/alertmanager/alertmanager.yml", \
-             "--storage.path=/alertmanager" ]
+USER		nobody
+EXPOSE		9093
+VOLUME		[ "/app/data", "/app/conf" ]
+WORKDIR		/app/data
+ENTRYPOINT	[ "/bin/alertmanager" ]
+CMD			[ "--config.file=/app/conf/alertmanager.yml",
+			  "--storage.path=/app/data" ]
