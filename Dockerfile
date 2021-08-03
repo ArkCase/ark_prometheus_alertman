@@ -57,6 +57,6 @@ USER        ${UID}
 EXPOSE      9093
 VOLUME      [ "/app/data", "/app/conf" ]
 WORKDIR     /app/data
-CMD         [ "/bin/alertmanager", \
-                  "--config.file=/app/conf/alertmanager.yml", \
-                  "--storage.path=/app/data" ]
+ENTRYPOINT  [ "/bin/alertmanager" ]
+CMD         [ "--config.file=/app/conf/alertmanager.yml", \
+              "--storage.path=/app/data" ]
