@@ -5,10 +5,10 @@ FROM 345280441424.dkr.ecr.ap-south-1.amazonaws.com/ark_base:latest
 #
 ARG ARCH="amd64"
 ARG OS="linux"
-ARG VER="0.22.2"
+ARG VER="0.23.0"
 ARG PKG="alertmanager"
 ARG SRC="${PKG}-${VER}.${OS}-${ARCH}"
-ARG UID="prometheus"
+ARG UID="471"
 
 #
 # Some important labels
@@ -22,7 +22,7 @@ LABEL IMAGE_SOURCE="https://github.com/ArkCase/ark_prometheus_alertman"
 #
 # Create the required user
 #
-RUN useradd --system --user-group "${UID}"
+RUN useradd --system --uid ${UID} --user-group prometheus
 
 #
 # Download the primary artifact
@@ -54,7 +54,7 @@ RUN ln -sv "/app/conf" "/etc/amtool"
 #
 # Set ownership + permissions
 #
-RUN chown -R "${UID}:"    "/app/data" "/app/conf"
+RUN chown -R prometheus:    "/app/data" "/app/conf"
 RUN chmod -R ug+rwX,o-rwx "/app/data" "/app/conf"
 
 #
@@ -65,7 +65,7 @@ RUN rm -rvf "${SRC}"
 #
 # Final parameters
 #
-USER        ${UID}
+USER        prometheus
 EXPOSE      9093
 VOLUME      [ "/app/data", "/app/conf" ]
 WORKDIR     /app/data
